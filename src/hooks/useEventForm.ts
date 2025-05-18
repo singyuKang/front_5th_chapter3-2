@@ -3,20 +3,29 @@ import { ChangeEvent, useState } from 'react';
 import { Event, RepeatType } from '../types';
 import { getTimeErrorMessage } from '../utils/timeValidation';
 
+import { adjustToValidDate } from '@/utils/dateUtils';
+
 type TimeErrorRecord = Record<'startTimeError' | 'endTimeError', string | null>;
 
 export const useEventForm = (initialEvent?: Event) => {
   const [title, setTitle] = useState(initialEvent?.title || '');
-  const [date, setDate] = useState(initialEvent?.date || '');
+
+  const [date, setDateRaw] = useState(initialEvent?.date || '');
+
+  const setDate = (newDate: string) => {
+    const validDate = adjustToValidDate(newDate);
+    setDateRaw(validDate);
+  };
+
   const [startTime, setStartTime] = useState(initialEvent?.startTime || '');
   const [endTime, setEndTime] = useState(initialEvent?.endTime || '');
   const [description, setDescription] = useState(initialEvent?.description || '');
   const [location, setLocation] = useState(initialEvent?.location || '');
   const [category, setCategory] = useState(initialEvent?.category || '');
-  const [isRepeating, setIsRepeating] = useState(initialEvent?.repeat.type !== 'none');
-  const [repeatType, setRepeatType] = useState<RepeatType>(initialEvent?.repeat.type || 'none');
-  const [repeatInterval, setRepeatInterval] = useState(initialEvent?.repeat.interval || 1);
-  const [repeatEndDate, setRepeatEndDate] = useState(initialEvent?.repeat.endDate || '');
+  const [isRepeating, setIsRepeating] = useState(initialEvent?.repeat?.type !== 'none');
+  const [repeatType, setRepeatType] = useState<RepeatType>(initialEvent?.repeat?.type || 'none');
+  const [repeatInterval, setRepeatInterval] = useState(initialEvent?.repeat?.interval || 1);
+  const [repeatEndDate, setRepeatEndDate] = useState(initialEvent?.repeat?.endDate || '');
   const [notificationTime, setNotificationTime] = useState(initialEvent?.notificationTime || 10);
 
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -40,7 +49,7 @@ export const useEventForm = (initialEvent?: Event) => {
 
   const resetForm = () => {
     setTitle('');
-    setDate('');
+    setDateRaw('');
     setStartTime('');
     setEndTime('');
     setDescription('');
