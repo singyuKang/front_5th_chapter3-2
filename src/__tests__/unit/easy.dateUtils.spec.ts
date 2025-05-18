@@ -1,6 +1,7 @@
 import { Event } from '../../types';
 
 import {
+  adjustToValidDate,
   fillZero,
   formatDate,
   formatMonth,
@@ -323,5 +324,25 @@ describe('윤년 확인 함수 테스트', () => {
     expect(isLeapYear(2023)).toBe(false);
     expect(isLeapYear(2021)).toBe(false);
     expect(isLeapYear(1)).toBe(false);
+  });
+});
+
+describe('adjustToValidDate 함수 테스트', () => {
+  describe('일반적인 경우', () => {
+    it('유효한 날짜는 그대로 반환해야 한다', () => {
+      expect(adjustToValidDate('2023-01-15')).toBe('2023-01-15');
+      expect(adjustToValidDate('2023-06-30')).toBe('2023-06-30');
+      expect(adjustToValidDate('2023-12-31')).toBe('2023-12-31');
+    });
+
+    it('비어있는 문자열은 그대로 반환해야 한다', () => {
+      expect(adjustToValidDate('')).toBe('');
+    });
+
+    it('날짜 형식이 아닌 문자열은 그대로 반환해야 한다', () => {
+      expect(adjustToValidDate('invalid-date')).toBe('invalid-date');
+      expect(adjustToValidDate('2023/05/15')).toBe('2023/05/15');
+      expect(adjustToValidDate('not a date')).toBe('not a date');
+    });
   });
 });
