@@ -1,4 +1,5 @@
 import { Event } from '@/types';
+import { generateRecurringEvents } from '@/utils/generateRecurringEvents';
 
 describe('generateRecurringEvents', () => {
   it('반복 설정이 유효하지 않으면 원본 이벤트만 반환해야 한다', () => {
@@ -295,7 +296,7 @@ describe('generateRecurringEvents', () => {
     const event: Event = {
       id: 'event-month-end',
       title: '월말 보고',
-      date: '2025-01-31', // 31일인 달
+      date: '2025-01-31',
       startTime: '13:00',
       endTime: '14:00',
       description: '월말 보고',
