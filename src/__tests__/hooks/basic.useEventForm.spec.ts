@@ -48,6 +48,7 @@ describe('useEventForm', () => {
       act(() => {
         result.current.setRepeatType('daily');
       });
+
       expect(result.current.repeatType).toBe('daily');
 
       act(() => {
