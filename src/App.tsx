@@ -38,7 +38,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { useCalendarView } from '@/hooks/useCalendarView.ts';
 import { useEventForm } from '@/hooks/useEventForm.ts';
@@ -103,8 +103,9 @@ function App() {
     editEvent,
   } = useEventForm();
 
-  const { events, saveEvent, deleteEvent } = useEventOperations(Boolean(editingEvent), () =>
-    setEditingEvent(null)
+  const { events, saveEvent, deleteEvent, saveRepeatEvents } = useEventOperations(
+    Boolean(editingEvent),
+    () => setEditingEvent(null)
   );
 
   const { notifications, notifiedEvents, setNotifications } = useNotifications(events);
@@ -155,13 +156,30 @@ function App() {
       notificationTime,
     };
 
-    const overlapping = findOverlappingEvents(eventData, events);
-    if (overlapping.length > 0) {
-      setOverlappingEvents(overlapping);
-      setIsOverlapDialogOpen(true);
-    } else {
-      await saveEvent(eventData);
+    if (isRepeating) {
+      await saveRepeatEvents(eventData);
       resetForm();
+    }
+
+    if (!isRepeating) {
+      const overlapping = findOverlappingEvents(eventData, events);
+      if (overlapping.length > 0) {
+        setOverlappingEvents(overlapping);
+        setIsOverlapDialogOpen(true);
+      } else {
+        await saveEvent(eventData);
+        resetForm();
+      }
+    }
+  };
+
+  const handleRepeatCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setIsRepeating(checked);
+    if (checked) {
+      setRepeatType('daily');
+    } else {
+      setRepeatType('none');
     }
   };
 
@@ -357,7 +375,7 @@ function App() {
 
           <FormControl>
             <FormLabel>반복 설정</FormLabel>
-            <Checkbox isChecked={isRepeating} onChange={(e) => setIsRepeating(e.target.checked)}>
+            <Checkbox isChecked={isRepeating} onChange={handleRepeatCheckboxChange}>
               반복 일정
             </Checkbox>
           </FormControl>

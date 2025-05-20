@@ -23,7 +23,7 @@ export function generateRecurringEvents(event: Event, maxOccurrences?: number): 
   let currentDate = new Date(startDate);
   let count = 0;
 
-  while (currentDate <= endDateObj && (!maxOccurrences || count < maxOccurrences)) {
+  while (currentDate <= endDateObj && (maxOccurrences === undefined || count < maxOccurrences)) {
     const newEvent: Event = {
       ...JSON.parse(JSON.stringify(event)),
       date: formatDate(currentDate),
@@ -39,43 +39,43 @@ export function generateRecurringEvents(event: Event, maxOccurrences?: number): 
   return events;
 }
 
-function getNextDate(date: Date, type: RepeatType, interval: number): Date {
-  const nextDate = new Date(date);
-
+const getNextDate = (date: Date, type: string, interval: number): Date => {
+  const newDate = new Date(date); // Create a new date to avoid modifying the original
+  const isLastDayOfMonth = () => {
+    const lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate();
+    return newDate.getDate() === lastDay;
+  };
+  const wasLastDayOfMonth = isLastDayOfMonth();
   switch (type) {
     case 'daily':
-      nextDate.setDate(date.getDate() + interval);
+      newDate.setDate(newDate.getDate() + interval);
       break;
     case 'weekly':
-      nextDate.setDate(date.getDate() + 7 * interval);
+      newDate.setDate(newDate.getDate() + interval * 7);
       break;
     case 'monthly':
-      // 월말 날짜 처리
-      const originalDay = date.getDate();
+      const initialDay = newDate.getDate();
 
-      // 원래 날짜가 해당 월의 마지막 날이었는지 확인
-      const originalMonthLastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-      const wasLastDay = originalDay === originalMonthLastDay;
-
-      // 다음 월 계산
-      const newYear = date.getFullYear() + Math.floor((date.getMonth() + interval) / 12);
-      const newMonth = (date.getMonth() + interval) % 12;
-
-      if (wasLastDay) {
-        nextDate.setFullYear(newYear, newMonth + 1, 0);
+      if (wasLastDayOfMonth) {
+        newDate.setMonth(newDate.getMonth() + interval + 1, 0);
       } else {
-        const lastDayOfNewMonth = new Date(newYear, newMonth + 1, 0).getDate();
-        const targetDay = Math.min(originalDay, lastDayOfNewMonth);
-        nextDate.setFullYear(newYear, newMonth, targetDay);
+        newDate.setMonth(newDate.getMonth() + interval);
+
+        if (newDate.getDate() !== initialDay) {
+          newDate.setDate(0);
+        }
       }
       break;
     case 'yearly':
-      nextDate.setFullYear(date.getFullYear() + interval);
+      newDate.setFullYear(newDate.getFullYear() + interval);
       break;
+    default:
+      throw new Error(`Unknown repeat type: ${type}`);
   }
 
-  return nextDate;
-}
+  return newDate;
+};
+
 function formatDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
