@@ -148,17 +148,29 @@ function App() {
       description,
       location,
       category,
-      repeat: {
-        type: isRepeating ? repeatType : 'none',
-        interval: repeatInterval,
-        endDate: repeatEndDate || undefined,
-      },
+      repeat: editingEvent
+        ? {
+            type: 'none',
+            interval: 0,
+          }
+        : {
+            type: isRepeating ? repeatType : 'none',
+            interval: repeatInterval,
+            endDate: repeatEndDate || undefined,
+          },
       notificationTime,
     };
 
     if (isRepeating) {
-      await saveRepeatEvents(eventData);
-      resetForm();
+      if (editingEvent) {
+        await saveEvent(eventData);
+        resetForm();
+      }
+
+      if (!editingEvent) {
+        await saveRepeatEvents(eventData);
+        resetForm();
+      }
     }
 
     if (!isRepeating) {
