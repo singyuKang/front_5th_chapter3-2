@@ -1,4 +1,4 @@
-import { Event } from '@/types';
+import { Event, EventForm } from '@/types';
 import { generateRecurringEvents } from '@/utils/generateRecurringEvents';
 
 describe('generateRecurringEvents', () => {
@@ -156,7 +156,6 @@ describe('generateRecurringEvents', () => {
     expect(resultDates).toEqual(['2025-04-01', '2025-04-15', '2025-04-29', '2025-05-13']);
   });
 
-  // 테스트 8: 월별 반복(1개월 간격)
   it('반복 날짜가 1개월마다 반복되어야 하고, 시작 날짜와 종료 날짜를 모두 포함해야 한다', () => {
     const event: Event = {
       id: 'event-monthly',
@@ -177,7 +176,6 @@ describe('generateRecurringEvents', () => {
     expect(resultDates).toEqual(['2025-05-01', '2025-06-01', '2025-07-01', '2025-08-01']);
   });
 
-  // 테스트 9: 월별 반복(3개월 간격)
   it('반복 날짜가 3개월마다 반복되어야 하고, 종료 날짜를 초과하지 않는 범위 내에서 반복되어야 한다', () => {
     const event: Event = {
       id: 'event-quarterly',
@@ -204,7 +202,6 @@ describe('generateRecurringEvents', () => {
     ]);
   });
 
-  // 테스트 10: 연별 반복(1년 간격)
   it('반복 날짜가 1년마다 반복되어야 하고, 시작 날짜와 종료 날짜를 모두 포함해야 한다', () => {
     const event: Event = {
       id: 'event-yearly',
@@ -225,7 +222,6 @@ describe('generateRecurringEvents', () => {
     expect(resultDates).toEqual(['2025-05-01', '2026-05-01', '2027-05-01']);
   });
 
-  // 테스트 11: 최대 반복 횟수 지정
   it('사용자가 지정한 특정 횟수만큼 일정이 반복되어야 한다', () => {
     const event: Event = {
       id: 'event-max-occurrences',
@@ -247,7 +243,6 @@ describe('generateRecurringEvents', () => {
     expect(resultDates).toEqual(['2025-04-01', '2025-04-08', '2025-04-15', '2025-04-22']);
   });
 
-  // 테스트 12: 종료 날짜가 딱 맞는 경우
   it('종료 날짜가 정확히 다음 반복일과 일치하는 경우 해당 날짜까지 포함되어야 한다', () => {
     const event: Event = {
       id: 'event-exact-end',
@@ -289,6 +284,36 @@ describe('generateRecurringEvents', () => {
       '2024-02-28',
       '2024-02-29', // 윤년 날짜 포함
       '2024-03-01',
+    ]);
+  });
+
+  it('2월 29일 시작 반복 일정 - 3월 01일로 조정 옵션', () => {
+    const event: Event = {
+      id: 'event-leap-year-feb28',
+      title: '윤년 기념일',
+      date: '2024-02-29',
+      startTime: '10:00',
+      endTime: '11:00',
+      description: '매년 발생하는 기념일',
+      location: '회의실',
+      category: '특별',
+      repeat: {
+        type: 'yearly',
+        interval: 1,
+        endDate: '2028-03-01',
+      },
+      notificationTime: 10,
+    };
+
+    const result = generateRecurringEvents(event);
+    const resultDates = result.map((e) => e.date);
+
+    expect(resultDates).toEqual([
+      '2024-02-29',
+      '2025-03-01',
+      '2026-03-01',
+      '2027-03-01',
+      '2028-03-01',
     ]);
   });
 
