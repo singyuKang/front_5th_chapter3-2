@@ -111,7 +111,7 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
       onSave?.();
       toast({
         title: '반복 일정이 추가되었습니다.',
-        status: 'error',
+        status: 'success',
         duration: 3000,
         isClosable: true,
       });
