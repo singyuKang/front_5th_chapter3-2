@@ -288,6 +288,7 @@ function App() {
                               >
                                 <HStack spacing={1}>
                                   {isNotified && <BellIcon />}
+                                  {event.repeat.type !== 'none' && <Text>🔁</Text>}
                                   <Text fontSize="sm" noOfLines={1}>
                                     {event.title}
                                   </Text>
