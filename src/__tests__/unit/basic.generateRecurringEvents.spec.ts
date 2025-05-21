@@ -336,4 +336,140 @@ describe('generateRecurringEvents', () => {
 
     expect(resultDates).toEqual(['2025-01-31', '2025-02-28', '2025-03-31', '2025-04-30']);
   });
+
+  describe('반복 종료 횟수', () => {
+    test('최대 발생 횟수만 설정된 경우 지정된 횟수만큼 이벤트를 생성한다', () => {
+      const event: Event = {
+        id: 'event-month-end',
+        title: '월말 보고',
+        date: '2025-01-31',
+        startTime: '13:00',
+        endTime: '14:00',
+        description: '월말 보고',
+        location: 'CoreTech 회의실',
+        category: '업무',
+        repeat: { type: 'daily', interval: 1, endDate: '2025-06-01', maxOccurrences: 3 },
+        notificationTime: 10,
+      };
+      const result = generateRecurringEvents(event, event.repeat.maxOccurrences);
+      expect(result).toHaveLength(3);
+      expect(result[0].date).toBe('2025-01-31');
+      expect(result[1].date).toBe('2025-02-01');
+      expect(result[2].date).toBe('2025-02-02');
+    });
+
+    test('weekly 반복 유형에서 최대 발생 횟수 적용', () => {
+      const event: Event = {
+        id: 'event-weekly',
+        title: '주간 회의',
+        date: '2025-03-05', // 수요일
+        startTime: '14:00',
+        endTime: '15:30',
+        description: '주간 업무 회의',
+        location: '회의실 B',
+        category: '회의',
+        repeat: { type: 'weekly', interval: 1, endDate: '2025-06-30', maxOccurrences: 5 },
+        notificationTime: 30,
+      };
+
+      const result = generateRecurringEvents(event, event.repeat.maxOccurrences);
+      expect(result).toHaveLength(5);
+      expect(result[0].date).toBe('2025-03-05');
+      expect(result[1].date).toBe('2025-03-12');
+      expect(result[2].date).toBe('2025-03-19');
+      expect(result[3].date).toBe('2025-03-26');
+      expect(result[4].date).toBe('2025-04-02');
+    });
+
+    test('monthly 반복 유형에서 최대 발생 횟수 적용', () => {
+      const event: Event = {
+        id: 'event-monthly',
+        title: '월간 보고',
+        date: '2025-01-15',
+        startTime: '09:00',
+        endTime: '10:00',
+        description: '월간 실적 보고',
+        location: '대회의실',
+        category: '보고',
+        repeat: { type: 'monthly', interval: 1, endDate: '2025-12-31', maxOccurrences: 4 },
+        notificationTime: 60,
+      };
+
+      const result = generateRecurringEvents(event, event.repeat.maxOccurrences);
+      expect(result).toHaveLength(4);
+      expect(result[0].date).toBe('2025-01-15');
+      expect(result[1].date).toBe('2025-02-15');
+      expect(result[2].date).toBe('2025-03-15');
+      expect(result[3].date).toBe('2025-04-15');
+    });
+
+    test('yearly 반복 유형에서 최대 발생 횟수 적용', () => {
+      const event: Event = {
+        id: 'event-yearly-max',
+        title: '연례 전략 회의',
+        date: '2025-01-15',
+        startTime: '09:00',
+        endTime: '17:00',
+        description: '연간 사업 계획 및 전략 수립',
+        location: '본사 대회의실',
+        category: '회의',
+        repeat: { type: 'yearly', interval: 1, endDate: '2035-01-15', maxOccurrences: 5 },
+        notificationTime: 1440,
+      };
+
+      const result = generateRecurringEvents(event, event.repeat.maxOccurrences);
+
+      expect(result).toHaveLength(5);
+
+      expect(result[0].date).toBe('2025-01-15');
+      expect(result[1].date).toBe('2026-01-15');
+      expect(result[2].date).toBe('2027-01-15');
+      expect(result[3].date).toBe('2028-01-15');
+      expect(result[4].date).toBe('2029-01-15');
+    });
+
+    test('종료 날짜가 먼저 도달하는 경우', () => {
+      const event: Event = {
+        id: 'event-end-date-first',
+        title: '프로젝트 회의',
+        date: '2025-05-01',
+        startTime: '11:00',
+        endTime: '12:00',
+        description: '프로젝트 진행 상황 점검',
+        location: '회의실 C',
+        category: '프로젝트',
+        repeat: { type: 'daily', interval: 2, endDate: '2025-05-10', maxOccurrences: 10 },
+        notificationTime: 20,
+      };
+
+      const result = generateRecurringEvents(event, event.repeat.maxOccurrences);
+      expect(result).toHaveLength(5);
+      expect(result[0].date).toBe('2025-05-01');
+      expect(result[4].date).toBe('2025-05-09');
+    });
+
+    test('시간 정보가 올바르게 유지되는지 확인', () => {
+      const event: Event = {
+        id: 'event-time-check',
+        title: '시간 테스트',
+        date: '2025-03-10',
+        startTime: '15:45',
+        endTime: '16:30',
+        description: '시간 설정 확인',
+        location: '사무실',
+        category: '테스트',
+        repeat: { type: 'daily', interval: 1, endDate: '2025-03-12' },
+        notificationTime: 15,
+      };
+
+      const result = generateRecurringEvents(event);
+      expect(result).toHaveLength(3);
+
+      result.forEach((evt) => {
+        expect(evt.startTime).toBe('15:45');
+        expect(evt.endTime).toBe('16:30');
+        expect(evt.notificationTime).toBe(15);
+      });
+    });
+  });
 });
