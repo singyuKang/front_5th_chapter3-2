@@ -89,6 +89,8 @@ function App() {
     setRepeatType,
     repeatInterval,
     setRepeatInterval,
+    maxOccurrences,
+    setMaxOccurrences,
     repeatEndDate,
     setRepeatEndDate,
     notificationTime,
@@ -157,6 +159,7 @@ function App() {
             type: isRepeating ? repeatType : 'none',
             interval: repeatInterval,
             endDate: repeatEndDate || undefined,
+            maxOccurrences: maxOccurrences || undefined,
           },
       notificationTime,
     };
@@ -168,6 +171,15 @@ function App() {
       }
 
       if (!editingEvent) {
+        if (!repeatEndDate) {
+          toast({
+            title: '반복 종료 시간을 입력해주세요.',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          });
+          return;
+        }
         await saveRepeatEvents(eventData);
         resetForm();
       }
@@ -433,14 +445,23 @@ function App() {
                   />
                 </FormControl>
                 <FormControl>
-                  <FormLabel>반복 종료일</FormLabel>
+                  <FormLabel>종료 횟수</FormLabel>
                   <Input
-                    type="date"
-                    value={repeatEndDate}
-                    onChange={(e) => setRepeatEndDate(e.target.value)}
+                    type="number"
+                    value={maxOccurrences || 0}
+                    onChange={(e) => setMaxOccurrences(Number(e.target.value))}
+                    min={0}
                   />
                 </FormControl>
               </HStack>
+              <FormControl>
+                <FormLabel>반복 종료일</FormLabel>
+                <Input
+                  type="date"
+                  value={repeatEndDate}
+                  onChange={(e) => setRepeatEndDate(e.target.value)}
+                />
+              </FormControl>
             </VStack>
           )}
 

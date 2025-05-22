@@ -135,4 +135,115 @@ describe('useEventForm', () => {
       expect(result.current.notificationTime).toBe(15);
     });
   });
+
+  describe('반복 종료 조건 설정', () => {
+    it('maxOccurrences를 설정할 수 있어야 한다', () => {
+      const { result } = renderHook(() => useEventForm());
+
+      expect(result.current.maxOccurrences).toBeUndefined();
+
+      act(() => {
+        result.current.setMaxOccurrences(10);
+      });
+
+      expect(result.current.maxOccurrences).toBe(10);
+
+      act(() => {
+        result.current.setMaxOccurrences(5);
+      });
+      expect(result.current.maxOccurrences).toBe(5);
+    });
+
+    it('maxOccurrences를 undefined로 초기화할 수 있어야 한다', () => {
+      const { result } = renderHook(() => useEventForm());
+
+      act(() => {
+        result.current.setMaxOccurrences(20);
+      });
+      expect(result.current.maxOccurrences).toBe(20);
+
+      act(() => {
+        result.current.setMaxOccurrences(undefined);
+      });
+      expect(result.current.maxOccurrences).toBeUndefined();
+    });
+
+    it('resetForm 함수가 maxOccurrences도 초기화해야 한다', () => {
+      const { result } = renderHook(() => useEventForm());
+
+      act(() => {
+        result.current.setMaxOccurrences(15);
+        result.current.setRepeatEndDate('2025-12-31');
+      });
+
+      expect(result.current.maxOccurrences).toBe(15);
+
+      act(() => {
+        result.current.resetForm();
+      });
+
+      expect(result.current.maxOccurrences).toBeUndefined();
+      expect(result.current.repeatEndDate).toBe('');
+    });
+
+    it('editEvent 함수가 maxOccurrences를 포함한 이벤트 데이터로 폼을 채워야 한다', () => {
+      const { result } = renderHook(() => useEventForm());
+
+      const event = {
+        id: '2',
+        title: '반복 횟수 제한 일정',
+        date: '2025-07-01',
+        startTime: '14:00',
+        endTime: '15:00',
+        description: '5회만 반복',
+        location: '회의실',
+        category: '회의',
+        repeat: {
+          type: 'daily' as const,
+          interval: 1,
+          endDate: '2025-07-10',
+          maxOccurrences: 5,
+        },
+        notificationTime: 30,
+      };
+
+      act(() => {
+        result.current.editEvent(event);
+      });
+
+      expect(result.current.maxOccurrences).toBe(5);
+      expect(result.current.repeatType).toBe('daily');
+      expect(result.current.repeatInterval).toBe(1);
+      expect(result.current.repeatEndDate).toBe('2025-07-10');
+    });
+
+    it('editEvent 함수가 maxOccurrences가 없는 이벤트를 처리해야 한다', () => {
+      const { result } = renderHook(() => useEventForm());
+
+      const testEventWithoutMaxOccurrences = {
+        id: '3',
+        title: '무제한 반복 일정',
+        date: '2025-08-01',
+        startTime: '09:00',
+        endTime: '10:00',
+        description: '종료일까지만 반복',
+        location: '사무실',
+        category: '업무',
+        repeat: {
+          type: 'weekly' as const,
+          interval: 2,
+          endDate: '2025-12-31',
+        },
+        notificationTime: 60,
+      };
+
+      act(() => {
+        result.current.editEvent(testEventWithoutMaxOccurrences);
+      });
+
+      expect(result.current.maxOccurrences).toBeUndefined();
+      expect(result.current.repeatType).toBe('weekly');
+      expect(result.current.repeatEndDate).toBe('2025-12-31');
+    });
+  });
 });

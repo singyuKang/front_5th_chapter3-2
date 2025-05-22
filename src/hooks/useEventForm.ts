@@ -28,6 +28,7 @@ export const useEventForm = (initialEvent?: Event) => {
   const [repeatType, setRepeatType] = useState<RepeatType>(initialEvent?.repeat?.type || 'none');
   const [repeatInterval, setRepeatInterval] = useState(initialEvent?.repeat?.interval || 1);
   const [repeatEndDate, setRepeatEndDate] = useState(initialEvent?.repeat?.endDate || '');
+  const [maxOccurrences, setMaxOccurrences] = useState<number | undefined>(undefined);
   const [notificationTime, setNotificationTime] = useState(initialEvent?.notificationTime || 10);
 
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -62,6 +63,7 @@ export const useEventForm = (initialEvent?: Event) => {
     setRepeatInterval(1);
     setRepeatEndDate('');
     setNotificationTime(10);
+    setMaxOccurrences(undefined);
   };
 
   const editEvent = (event: Event) => {
@@ -78,6 +80,7 @@ export const useEventForm = (initialEvent?: Event) => {
     setRepeatInterval(event.repeat.interval);
     setRepeatEndDate(event.repeat.endDate || '');
     setNotificationTime(event.notificationTime);
+    setMaxOccurrences(event.repeat.maxOccurrences);
   };
 
   return {
@@ -103,6 +106,8 @@ export const useEventForm = (initialEvent?: Event) => {
     setRepeatInterval,
     repeatEndDate,
     setRepeatEndDate,
+    maxOccurrences,
+    setMaxOccurrences,
     notificationTime,
     setNotificationTime,
     startTimeError,
