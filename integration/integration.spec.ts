@@ -65,8 +65,8 @@ test.describe.serial('통합 테스트', () => {
     await waitForServer('http://localhost:5173');
   });
 
-  test.describe('반복 일정 등록', () => {
-    test('1. 반복 유형을 매일로 선택하면, 매일 반복되는 일정이 생성되어야한다.', async ({
+  test.describe('1. 반복 유형 선택', () => {
+    test('1.1 반복 유형을 매일로 선택하면, 매일 반복되는 일정이 생성되어야한다.', async ({
       page,
     }) => {
       await clearRealEventsData();
@@ -116,7 +116,7 @@ test.describe.serial('통합 테스트', () => {
       }
     });
 
-    test('2. 반복 유형을 매주로 선택하면, 매주 반복되는 일정이 생성되어야한다.', async ({
+    test('1.2 반복 유형을 매주로 선택하면, 매주 반복되는 일정이 생성되어야한다.', async ({
       page,
     }) => {
       await clearRealEventsData();
@@ -165,11 +165,10 @@ test.describe.serial('통합 테스트', () => {
       }
     });
 
-    test('3. 반복 유형을 매월로 선택하면, 매월 반복되는 일정이 생성되어야한다.', async ({
+    test('1.3 반복 유형을 매월로 선택하면, 매월 반복되는 일정이 생성되어야한다.', async ({
       page,
     }) => {
       await clearRealEventsData();
-
       await page.goto('http://localhost:5173/');
       await page.reload();
 
@@ -229,7 +228,7 @@ test.describe.serial('통합 테스트', () => {
       ).toBeVisible();
     });
 
-    test('4. 반복 유형을 매년로 선택하면, 매년 반복되는 일정이 생성되어야한다.', async ({
+    test('1.4 반복 유형을 매년로 선택하면, 매년 반복되는 일정이 생성되어야한다.', async ({
       page,
     }) => {
       await clearRealEventsData();
@@ -315,8 +314,102 @@ test.describe.serial('통합 테스트', () => {
           .first()
       ).toBeVisible();
     });
+  });
 
-    test('5. 종료 횟수를 2로 설정하면 2개의 일정만 생성되어야 한다.', async ({ page }) => {
+  test.describe('2. 반복 간격 설정', () => {
+    test('2.1 반복 간격을 2일로 설정하면, 2일마다 반복되는 일정이 생성되어야한다.', async ({
+      page,
+    }) => {
+      await clearRealEventsData();
+      await page.goto('http://localhost:5173/');
+      await page.reload();
+
+      //반복일정 등록 useEventForm
+      await page.getByLabel('제목').click();
+      await page.getByLabel('제목').fill('2일마다 반복 테스트');
+      await page.getByLabel('날짜').fill('2025-05-01');
+      await page.getByRole('textbox', { name: '시작 시간' }).click();
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).click();
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByLabel('설명').click();
+      await page.getByLabel('설명').fill('2일마다 반복하는 일정');
+      await page.getByLabel('위치').click();
+      await page.getByLabel('위치').fill('서울');
+      await page.getByLabel('카테고리').selectOption('개인');
+      await page.getByText('반복 일정').click();
+      await page.getByLabel('반복 유형').selectOption('daily');
+      await page.getByLabel('반복 간격').fill('2'); // 2일마다
+      await page.getByRole('textbox', { name: '반복 종료일' }).fill('2025-05-10');
+
+      await page.getByTestId('event-submit-button').click();
+
+      // 2일 간격으로 생성된 날짜들 확인 (01, 03, 05, 07, 09)
+      const expectedDates = ['01', '03', '05', '07', '09'];
+      for (const day of expectedDates) {
+        await expect(
+          page
+            .getByTestId('event-list')
+            .locator('div')
+            .filter({ hasText: `🔁2일마다 반복 테스트2025-05-${day}` })
+            .first()
+        ).toBeVisible();
+      }
+
+      // 2일 간격이 아닌 날짜는 없어야 함 (02, 04, 06, 08, 10)
+      const unexpectedDates = ['02', '04', '06', '08', '10'];
+      for (const day of unexpectedDates) {
+        await expect(
+          page
+            .getByTestId('event-list')
+            .locator('div')
+            .filter({ hasText: `🔁2일마다 반복 테스트2025-05-${day}` })
+        ).toHaveCount(0);
+      }
+    });
+  });
+
+  test.describe('3. 반복 일정 표시', () => {
+    test('3.1 반복 일정에는 반복 아이콘(🔁)이 표시되어야한다.', async ({ page }) => {
+      await clearRealEventsData();
+      await page.goto('http://localhost:5173/');
+      await page.reload();
+
+      // 반복 일정 등록
+      await page.getByLabel('제목').fill('반복 아이콘 테스트');
+      await page.getByLabel('날짜').fill('2025-05-01');
+      await page.getByRole('textbox', { name: '시작 시간' }).fill('10:00');
+      await page.getByRole('textbox', { name: '종료 시간' }).fill('11:00');
+      await page.getByLabel('설명').fill('반복 아이콘 확인');
+      await page.getByLabel('위치').fill('서울');
+      await page.getByLabel('카테고리').selectOption('개인');
+      await page.getByText('반복 일정').click();
+      await page.getByLabel('반복 유형').selectOption('daily');
+      await page.getByRole('textbox', { name: '반복 종료일' }).fill('2025-05-03');
+      await page.getByTestId('event-submit-button').click();
+
+      // 반복 아이콘이 표시되는지 확인
+      await expect(
+        page
+          .getByTestId('event-list')
+          .locator('div')
+          .filter({ hasText: `🔁반복 아이콘 테스트2025-05-01` })
+          .first()
+      ).toBeVisible();
+    });
+  });
+
+  test.describe('4. 반복 종료', () => {
+    test('4.1 종료 횟수를 2로 설정하면 2개의 일정만 생성되어야 한다.', async ({ page }) => {
       await clearRealEventsData();
       await page.goto('http://localhost:5173/');
       await page.reload();
@@ -370,18 +463,15 @@ test.describe.serial('통합 테스트', () => {
           .first()
       ).toBeVisible();
 
-      // 2025-05-03은 존재하지 않아야 함
       await expect(
         page
           .getByTestId('event-list')
           .locator('div')
           .filter({ hasText: '🔁종료 횟수 테스트2025-05-03' })
       ).toHaveCount(0);
-
-      console.log('✅ 종료 횟수 2개로 정확히 제한됨');
     });
 
-    test('6. 종료 횟수를 5로 설정하면 5개의 일정만 생성되어야 한다.', async ({ page }) => {
+    test('4.2 종료 횟수를 5로 설정하면 5개의 일정만 생성되어야 한다.', async ({ page }) => {
       await clearRealEventsData();
 
       await page.goto('http://localhost:5173/');
@@ -398,20 +488,16 @@ test.describe.serial('통합 테스트', () => {
       await page.getByText('반복 일정').click();
       await page.getByLabel('반복 유형').selectOption('daily');
 
-      // 종료일을 넉넉히 설정 (한 달 후)
       await page.getByRole('textbox', { name: '반복 종료일' }).fill('2025-06-01');
 
-      // 종료 횟수를 5로 설정
       await page.getByRole('spinbutton', { name: '종료 횟수' }).fill('5');
 
       await page.getByTestId('event-submit-button').click();
 
-      // 총 5개의 일정만 생성되었는지 확인
       await expect(page.getByTestId('event-list').getByText('🔁종료 횟수 5회 테스트')).toHaveCount(
         5
       );
 
-      // 정확한 날짜들 확인 (2025-05-01 ~ 2025-05-05)
       const expectedDates = ['01', '02', '03', '04', '05'];
       for (const day of expectedDates) {
         await expect(
@@ -423,27 +509,23 @@ test.describe.serial('통합 테스트', () => {
         ).toBeVisible();
       }
 
-      // 6번째 일정(2025-05-06)은 존재하지 않아야 함
       await expect(
         page
           .getByTestId('event-list')
           .locator('div')
           .filter({ hasText: '🔁종료 횟수 5회 테스트2025-05-06' })
       ).toHaveCount(0);
-
-      console.log('✅ 종료 횟수 5개로 정확히 제한됨');
     });
 
-    test('7. 주간 반복에서 종료 횟수를 3으로 설정하면 3주간만 생성되어야 한다.', async ({
+    test('4.3 주간 반복에서 종료 횟수를 3으로 설정하면 3주간만 생성되어야 한다.', async ({
       page,
     }) => {
       await clearRealEventsData();
       await page.goto('http://localhost:5173/');
       await page.reload();
 
-      // 주간 반복일정 등록
       await page.getByLabel('제목').fill('주간 종료 횟수 테스트');
-      await page.getByLabel('날짜').fill('2025-05-01'); // 목요일
+      await page.getByLabel('날짜').fill('2025-05-01');
       await page.getByRole('textbox', { name: '시작 시간' }).fill('14:00');
       await page.getByRole('textbox', { name: '종료 시간' }).fill('15:00');
       await page.getByLabel('설명').fill('3주간만 반복되는 일정');
@@ -452,20 +534,16 @@ test.describe.serial('통합 테스트', () => {
       await page.getByText('반복 일정').click();
       await page.getByLabel('반복 유형').selectOption('weekly');
 
-      // 종료일을 넉넉히 설정
       await page.getByRole('textbox', { name: '반복 종료일' }).fill('2025-06-30');
 
-      // 종료 횟수를 3으로 설정
       await page.getByRole('spinbutton', { name: '종료 횟수' }).fill('3');
 
       await page.getByTestId('event-submit-button').click();
 
-      // 총 3개의 일정만 생성되었는지 확인
       await expect(page.getByTestId('event-list').getByText('🔁주간 종료 횟수 테스트')).toHaveCount(
         3
       );
 
-      // 3주간의 목요일 확인 (05/01, 05/08, 05/15)
       await expect(
         page
           .getByTestId('event-list')
@@ -490,66 +568,17 @@ test.describe.serial('통합 테스트', () => {
           .first()
       ).toBeVisible();
 
-      // 4번째 주(2025-05-22)는 존재하지 않아야 함
       await expect(
         page
           .getByTestId('event-list')
           .locator('div')
           .filter({ hasText: '🔁주간 종료 횟수 테스트2025-05-22' })
       ).toHaveCount(0);
-
-      console.log('✅ 주간 반복 종료 횟수 3개로 정확히 제한됨');
     });
   });
 
-  test.describe('반복일정 삭제', () => {
-    test('1. 반복 일정 중 특정 하루의 일정을 삭제하면 단일 일정만 삭제된다.', async ({ page }) => {
-      await clearRealEventsData();
-
-      await page.goto('http://localhost:5173/');
-      await page.reload();
-
-      //반복일정 등록 useEventForm
-      await page.getByLabel('제목').click();
-      await page.getByLabel('제목').fill('반복일정 테스트');
-      await page.getByLabel('날짜').fill('2025-05-01');
-      await page.getByRole('textbox', { name: '시작 시간' }).click();
-      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
-      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowRight');
-      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
-      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowRight');
-      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
-      await page.getByRole('textbox', { name: '종료 시간' }).click();
-      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
-      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowRight');
-      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
-      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowRight');
-      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
-      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
-      await page.getByLabel('설명').click();
-      await page.getByLabel('설명').fill('반복일정 테스트 하기');
-      await page.getByLabel('위치').click();
-      await page.getByLabel('위치').fill('서울');
-      await page.getByLabel('카테고리').selectOption('개인');
-      await page.getByText('반복 일정').click();
-      await page.getByLabel('반복 유형').selectOption('daily');
-      await page.getByRole('textbox', { name: '반복 종료일' }).fill('2025-05-10');
-
-      await page.getByTestId('event-submit-button').click();
-
-      await page.locator('button:nth-child(2)').first().click();
-
-      await expect(
-        page
-          .getByTestId('event-list')
-          .locator('div')
-          .filter({ hasText: `🔁반복일정 테스트2025-05-01` })
-      ).not.toBeVisible();
-    });
-  });
-
-  test.describe('반복일정 수정', () => {
-    test('1. 반복 일정을 수정하면은 일반 일정으로 변경된다.', async ({ page }) => {
+  test.describe('5. 반복 일정 단일 수정', () => {
+    test('5.1 반복 일정을 수정하면 일반 일정으로 변경된다.', async ({ page }) => {
       await clearRealEventsData();
 
       await page.goto('http://localhost:5173/');
@@ -604,8 +633,53 @@ test.describe.serial('통합 테스트', () => {
     });
   });
 
+  test.describe('6. 반복 일정 단일 삭제', () => {
+    test('6.1 반복 일정 중 특정 하루의 일정을 삭제하면 단일 일정만 삭제된다.', async ({ page }) => {
+      await clearRealEventsData();
+
+      await page.goto('http://localhost:5173/');
+      await page.reload();
+
+      //반복일정 등록 useEventForm
+      await page.getByLabel('제목').click();
+      await page.getByLabel('제목').fill('반복일정 테스트');
+      await page.getByLabel('날짜').fill('2025-05-01');
+      await page.getByRole('textbox', { name: '시작 시간' }).click();
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '시작 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).click();
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowRight');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByRole('textbox', { name: '종료 시간' }).press('ArrowUp');
+      await page.getByLabel('설명').click();
+      await page.getByLabel('설명').fill('반복일정 테스트 하기');
+      await page.getByLabel('위치').click();
+      await page.getByLabel('위치').fill('서울');
+      await page.getByLabel('카테고리').selectOption('개인');
+      await page.getByText('반복 일정').click();
+      await page.getByLabel('반복 유형').selectOption('daily');
+      await page.getByRole('textbox', { name: '반복 종료일' }).fill('2025-05-10');
+
+      await page.getByTestId('event-submit-button').click();
+
+      await page.locator('button:nth-child(2)').first().click();
+
+      await expect(
+        page
+          .getByTestId('event-list')
+          .locator('div')
+          .filter({ hasText: `🔁반복일정 테스트2025-05-01` })
+      ).not.toBeVisible();
+    });
+  });
+
   test.afterAll(() => {
-    // 프로세스 종료
     if (serverProcess) {
       serverProcess.kill();
     }
