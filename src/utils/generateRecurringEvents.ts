@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { Event, RepeatType } from '@/types';
+import { Event } from '@/types';
 
 export function generateRecurringEvents(event: Event, maxOccurrences?: number): Event[] {
   if (!event.repeat || !event.repeat.type || !event.repeat.interval) {

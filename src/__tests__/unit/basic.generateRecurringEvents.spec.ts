@@ -1,4 +1,4 @@
-import { Event, EventForm } from '@/types';
+import { Event } from '@/types';
 import { generateRecurringEvents } from '@/utils/generateRecurringEvents';
 
 describe('generateRecurringEvents', () => {
