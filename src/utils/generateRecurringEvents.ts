@@ -40,7 +40,7 @@ export function generateRecurringEvents(event: Event, maxOccurrences?: number): 
 }
 
 const getNextDate = (date: Date, type: string, interval: number): Date => {
-  const newDate = new Date(date); // Create a new date to avoid modifying the original
+  const newDate = new Date(date);
   const isLastDayOfMonth = () => {
     const lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate();
     return newDate.getDate() === lastDay;
