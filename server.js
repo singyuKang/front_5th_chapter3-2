@@ -3,6 +3,7 @@ import fs from 'fs';
 import { readFile } from 'fs/promises';
 import path from 'path';
 
+import cors from 'cors';
 import express from 'express';
 
 const app = express();
@@ -10,6 +11,14 @@ const port = 3000;
 const __dirname = path.resolve();
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true,
+  })
+);
 
 const getEvents = async () => {
   const data = await readFile(`${__dirname}/src/__mocks__/response/realEvents.json`, 'utf8');
@@ -125,7 +134,7 @@ app.put('/api/events-list', async (req, res) => {
 
 app.delete('/api/events-list', async (req, res) => {
   const events = await getEvents();
-  const newEvents = events.events.filter((event) => !req.body.eventIds.includes(event.id)); // ? ids를 전달하면 해당 아이디를 기준으로 events에서 제거
+  const newEvents = events.events.filter((event) => !req.body.eventIds.includes(event.id));
 
   fs.writeFileSync(
     `${__dirname}/src/__mocks__/response/realEvents.json`,

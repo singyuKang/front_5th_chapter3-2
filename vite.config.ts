@@ -35,6 +35,7 @@ export default mergeConfig(
         reportsDirectory: './.coverage',
         reporter: ['lcov', 'json', 'json-summary'],
       },
+      exclude: ['e2e/**', 'integration/**', 'node_modules/**'],
     },
     resolve: {
       alias: {
