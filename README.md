@@ -207,7 +207,7 @@ e2e 테스트는 `최소한의 핵심 시나리오 중심`: E2E는 시간과 리
 
 이번 과제를 진행하면서 사용자의 흐름을 따라가며 `테스트코드를 작성`하였습니다.
 
-![스크린샷 2025-05-23 오후 12 33 45](https://github.com/user-attachments/assets/3203cae2-e711-4e3c-8442-5b947b261448)
+<img width="1189" height="622" alt="Image" src="https://github.com/user-attachments/assets/a5444afe-eda2-4f17-be6d-472ca87b31e4" />
 
 예시)
 
@@ -359,12 +359,13 @@ e2e 테스트는 `초기 렌더링부터 모든 과정을 담아야 한다 싶�
 
 `통합테스트 + e2e 테스트 진행`을 하였습니다.
 
-<img width="961" alt="스크린샷 2025-05-23 오전 1 31 37" src="https://github.com/user-attachments/assets/68c0b08e-a9dc-4ed3-8cf8-45c7ecb395bd" />
+<img width="961" height="734" alt="Image" src="https://github.com/user-attachments/assets/e27fc2fa-cc00-496a-8107-13b580d97527" />
 
 
 ## playwright ui + codegen
-![스크린샷 2025-05-23 오후 1 12 14](https://github.com/user-attachments/assets/5be5c37b-a29c-4a0e-931b-c0dc2f404e55)
-![스크린샷 2025-05-23 오후 1 12 52](https://github.com/user-attachments/assets/7a4aeb06-abe4-4ec0-87e2-a364b6f23672)
+<img width="1448" height="991" alt="Image" src="https://github.com/user-attachments/assets/a757058e-c200-4439-8a46-514c802c0e3c" />
+<img width="1521" height="776" alt="Image" src="https://github.com/user-attachments/assets/27025d66-d4f9-4604-a60a-8177ffd175d4" />
+
 
 codegen + playwright ui를 통해 테스트코드 작성과 테스트를 보다 편하게 진행할 수 있었습니다.
 
